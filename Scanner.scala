@@ -3,21 +3,21 @@ import Scanner.*
 import scala.collection.mutable
 import TokenType.*
 
-class Scanner(val source: String) {
+final class Scanner(private val source: String) {
   private val tokens = mutable.ArrayBuffer[Token]()
-  // first char in the lexeme being scanned
+  // current lexeme
   private var start = 0
-  // char currently considered, start ≤ current
-  private var current = 0
+  private var end = 0
+  private def lexeme = source.substring(start, end)
   // line in the source
   private var line = 1
 
   def scanTokens(): List[Token] = {
     while (!isAtEnd) {
-      start = current
+      start = end
       scanToken()
     }
-    tokens.addOne(Token(TokenType.EOF, "", null, line))
+    tokens.addOne(Token(TokenType.EOF, "", None, line))
     tokens.toList
   }
 
@@ -51,19 +51,19 @@ class Scanner(val source: String) {
   }
 
   private def advance(): Char = {
-    val c = source(current)
-    current += 1
+    val c = source(end)
+    end += 1
     c
   }
 
-  private def addToken(tokenType: TokenType, literal: Any = null): tokens.type = {
-    val text = source.substring(start, current)
+  private def addToken(tokenType: TokenType, literal: Option[Any] = None): tokens.type = {
+    val text = lexeme
     tokens.addOne(Token(tokenType, text, literal, line))
   }
 
   private def matches(expected: Char): Boolean = {
-    if (!isAtEnd && source(current) == expected) {
-      current += 1
+    if (!isAtEnd && source(end) == expected) {
+      end += 1
       true
     } else false
   }
@@ -78,7 +78,7 @@ class Scanner(val source: String) {
       Lox.error(line, "Unterminated string.")
     }
     advance() // consume the closing quote
-    addToken(STRING, source.substring(start + 1, current - 1))
+    addToken(STRING, Some(source.substring(start + 1, end - 1)))
   }
 
   private def number(): Unit = {
@@ -87,19 +87,18 @@ class Scanner(val source: String) {
       advance()
       while (isDigit(peek)) advance()
     }
-    addToken(NUMBER, source.substring(start, current).toDouble)
+    addToken(NUMBER, Some(lexeme.toDouble))
   }
 
   private def identifier(): Unit = {
     while (isAlphanumeric(peek)) advance()
-    val text = source.substring(start, current)
-    val tokenType = keywords.getOrElse(text, IDENTIFIER)
+    val tokenType = keywords.getOrElse(lexeme, IDENTIFIER)
     addToken(tokenType)
   }
 
-  private def isAtEnd = source.length <= current
-  private def peek = if isAtEnd then '\u0000' else source(current)
-  private def peekNext = if current + 1 >= source.length then '\u0000' else source(current + 1)
+  private def isAtEnd = source.length <= end
+  private def peek = if isAtEnd then '\u0000' else source(end)
+  private def peekNext = if end + 1 >= source.length then '\u0000' else source(end + 1)
 }
 
 object Scanner {
@@ -125,5 +124,4 @@ object Scanner {
   private def isDigit(c: Char) = c >= '0' && c <= '9'
   private def isAlpha(c: Char) = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')
   private def isAlphanumeric(c: Char) = isDigit(c) || isAlpha(c)
-
 }

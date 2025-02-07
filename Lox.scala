@@ -41,13 +41,9 @@ object Lox {
     tokens.foreach(println)
   }
 
-  var hadError = false
+  private var hadError = false
 
-  def error(line: Int, message: String): Unit = {
-    report(line, "", message)
-  }
-
-  def report(line: Int, where: String, message: String): Unit = {
+  def error(line: Int, message: String, where: String = ""): Unit = {
     println(s"[line $line] Error$where: $message")
     hadError = true
   }
