@@ -42,6 +42,7 @@ class Scanner(val source: String) {
       case ' ' | '\r' | '\t' => ()
       case '\n' => line += 1
       case '"' => string()  // supports multiline strings
+      case c if isDigit(c) => number()
       case _ => Lox.error(line, "Unexpected character.")
     }
   }
@@ -77,6 +78,18 @@ class Scanner(val source: String) {
     addToken(STRING, source.substring(start + 1, current - 1))
   }
 
+  private def number(): Unit = {
+    while (isDigit(peek)) advance()
+    if (peek == '.' && isDigit(peekNext)) {
+      advance()
+      while (isDigit(peek)) advance()
+    }
+    addToken(NUMBER, source.substring(start, current).toDouble)
+  }
+
+  private def isDigit(c: Char) = c >= '0' && c <= '9'
+
   private def isAtEnd = source.length <= current
   private def peek = if isAtEnd then '\u0000' else source(current)
+  private def peekNext = if current + 1 >= source.length then '\u0000' else source(current + 1)
 }
