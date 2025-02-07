@@ -41,6 +41,7 @@ class Scanner(val source: String) {
       } else { addToken(SLASH) }
       case ' ' | '\r' | '\t' => ()
       case '\n' => line += 1
+      case '"' => string()  // supports multiline strings
       case _ => Lox.error(line, "Unexpected character.")
     }
   }
@@ -61,6 +62,19 @@ class Scanner(val source: String) {
       current += 1
       true
     } else false
+  }
+
+  private def string(): Unit = {
+    while (!isAtEnd && peek != '"') {
+      if (peek == '\n')
+        line += 1
+      advance()
+    }
+    if (isAtEnd) {
+      Lox.error(line, "Unterminated string.")
+    }
+    advance() // consume the closing quote
+    addToken(STRING, source.substring(start + 1, current - 1))
   }
 
   private def isAtEnd = source.length <= current
