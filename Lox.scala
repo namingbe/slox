@@ -51,12 +51,4 @@ object Lox {
     println(s"[line $line] Error$where: $message")
     hadError = true
   }
-
-  // Stubs
-
-  trait Token
-
-  class Scanner(val source: String) {
-    def scanTokens(): List[Token] = ???
-  }
 }
