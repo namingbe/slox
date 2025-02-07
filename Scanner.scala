@@ -1,3 +1,5 @@
+import Scanner.*
+
 import scala.collection.mutable
 import TokenType.*
 
@@ -43,6 +45,7 @@ class Scanner(val source: String) {
       case '\n' => line += 1
       case '"' => string()  // supports multiline strings
       case c if isDigit(c) => number()
+      case c if isAlpha(c) => identifier()
       case _ => Lox.error(line, "Unexpected character.")
     }
   }
@@ -87,9 +90,40 @@ class Scanner(val source: String) {
     addToken(NUMBER, source.substring(start, current).toDouble)
   }
 
-  private def isDigit(c: Char) = c >= '0' && c <= '9'
+  private def identifier(): Unit = {
+    while (isAlphanumeric(peek)) advance()
+    val text = source.substring(start, current)
+    val tokenType = keywords.getOrElse(text, IDENTIFIER)
+    addToken(tokenType)
+  }
 
   private def isAtEnd = source.length <= current
   private def peek = if isAtEnd then '\u0000' else source(current)
   private def peekNext = if current + 1 >= source.length then '\u0000' else source(current + 1)
+}
+
+object Scanner {
+  private val keywords: Map[String, TokenType] = Map(
+    "and" -> AND,
+    "class" -> CLASS,
+    "else" -> ELSE,
+    "false" -> FALSE,
+    "for" -> FOR,
+    "fun" -> FUN,
+    "if" -> IF,
+    "nil" -> NIL,
+    "or" -> OR,
+    "print" -> PRINT,
+    "return" -> RETURN,
+    "super" -> SUPER,
+    "this" -> THIS,
+    "true" -> TRUE,
+    "var" -> VAR,
+    "while" -> WHILE,
+  )
+
+  private def isDigit(c: Char) = c >= '0' && c <= '9'
+  private def isAlpha(c: Char) = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')
+  private def isAlphanumeric(c: Char) = isDigit(c) || isAlpha(c)
+
 }
