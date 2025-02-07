@@ -1,4 +1,3 @@
-import java.io.{BufferedReader, InputStreamReader}
 import java.nio.charset.Charset
 import java.nio.file.{Files, Paths}
 import scala.annotation.tailrec
@@ -20,6 +19,8 @@ object Lox {
   private def runFile(path: String): Unit = {
     val bytes = Files.readAllBytes(Paths.get(path))
     run(String(bytes, Charset.defaultCharset()))
+    if (hadError)
+      System.exit(65)
   }
 
   @tailrec
@@ -29,6 +30,7 @@ object Lox {
     // .readLine() yields null when Ctrl-D is typed
     if (line != null) {
       run(line)
+      hadError = false
       runPrompt()
     }
   }
@@ -37,6 +39,17 @@ object Lox {
     val scanner = Scanner(source)
     val tokens = scanner.scanTokens()
     tokens.foreach(println)
+  }
+
+  var hadError = false
+
+  def error(line: Int, message: String): Unit = {
+    report(line, "", message)
+  }
+
+  def report(line: Int, where: String, message: String): Unit = {
+    println(s"[line $line] Error$where: $message")
+    hadError = true
   }
 
   // Stubs
