@@ -36,6 +36,11 @@ class Scanner(val source: String) {
       case '=' => addToken(if matches('=') then EQUAL_EQUAL else EQUAL)
       case '<' => addToken(if matches('=') then LESS_EQUAL else LESS)
       case '>' => addToken(if matches('=') then GREATER_EQUAL else GREATER)
+      case '/' => if (matches('/')) {
+        while (peek != '\n' && !isAtEnd) advance()
+      } else { addToken(SLASH) }
+      case ' ' | '\r' | '\t' => ()
+      case '\n' => line += 1
       case _ => Lox.error(line, "Unexpected character.")
     }
   }
@@ -58,5 +63,6 @@ class Scanner(val source: String) {
     } else false
   }
 
-  private def isAtEnd = current >= source.length
+  private def isAtEnd = source.length <= current
+  private def peek = if isAtEnd then '\u0000' else source(current)
 }
