@@ -32,6 +32,7 @@ class Scanner(val source: String) {
       case '+' => addToken(PLUS)
       case ';' => addToken(SEMICOLON)
       case '*' => addToken(STAR)
+      case _ => Lox.error(line, "Unexpected character.")
     }
   }
 
