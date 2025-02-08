@@ -19,17 +19,17 @@ object GenerateAst {
   }
 
   private def defineAst(outputDir: String, baseName: String, types: List[(String, String)]): Unit = {
-    val path = outputDir + "/" + baseName + ".scala"
-    val writer = new PrintWriter(path, "UTF-8")
-    writer.println(s"sealed trait $baseName\n\nobject $baseName {")
-    val children = for { (className, fields) <- types } yield {
-      s"""  case class $className(
-         |    ${fields.split(",").map(_.trim).mkString(",\n    ")}
-         |  ) extends $baseName
-         |""".stripMargin
-    }
-    writer.println(children.mkString("\n"))
-    writer.println("}")
+    val children = types.map { case (className, fields) =>
+      s"  final case class $className($fields) extends $baseName"
+    }.mkString("\n")
+    val complete =
+      s"""sealed trait $baseName
+         |
+         |object $baseName {
+         |$children
+         |}""".stripMargin
+    val writer = new PrintWriter(s"$outputDir/$baseName.scala", "UTF-8")
+    writer.print(complete)
     writer.close()
   }
 }
