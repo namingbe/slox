@@ -15,4 +15,5 @@ class AstPrinter extends Expr.Visitor[String] {
 
   private def parenthesize(name: String, exprs: Expr*): String =
     s"($name ${exprs.map(_.accept(this)).mkString(" ")})"
+  // RPN: s"${exprs.map(_.accept(this)).mkString(" ")} $name"
 }
