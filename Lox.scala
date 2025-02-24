@@ -38,7 +38,14 @@ object Lox {
   private def run(source: String): Unit = {
     val scanner = Scanner(source)
     val tokens = scanner.scanTokens()
+    if (hadError) { return }
     tokens.foreach(println)
+    val parser = Parser(tokens)
+    val maybeExpression = parser.parse()
+    maybeExpression match {
+      case Some(expression) => println(AstPrinter().print(expression))
+      case None => ()
+    }
   }
 
   private var hadError = false
@@ -49,6 +56,6 @@ object Lox {
   }
   def error(token: Token, message: String): Unit = {
     val position = if token.tokenType == TokenType.EOF then " at end" else s" at '${token.lexeme}'"
-    error(token.line, position, message)
+    error(token.line, message, position)
   }
 }

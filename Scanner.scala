@@ -12,13 +12,13 @@ final class Scanner(private val source: String) {
   // line in the source
   private var line = 1
 
-  def scanTokens(): List[Token] = {
+  def scanTokens(): Vector[Token] = {
     while (!isAtEnd) {
       start = end
       scanToken()
     }
     tokens.addOne(Token(TokenType.EOF, "", None, line))
-    tokens.toList
+    tokens.toVector
   }
 
   private def scanToken(): Unit = {

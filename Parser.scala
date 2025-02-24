@@ -2,8 +2,14 @@ import Parser.ParseError
 import TokenType.*
 
 import scala.annotation.tailrec
+import scala.util.Try
 
 class Parser(tokens: Vector[Token]) {
+  def parse(): Option[Expr] =
+    Try { Some(expression()) }
+      .recover { case e: ParseError => None }
+      .get
+
   private var current = 0
 
   private def expression() =  equality()
@@ -59,10 +65,10 @@ class Parser(tokens: Vector[Token]) {
     if (matches(NUMBER, STRING)) { return Expr.Literal(previous.literal) }
     if (matches(LEFT_PAREN)) {
       val expr = expression()
-      consume(RIGHT_PAREN, "Expect ')' after expression.")
+      consume(RIGHT_PAREN, "Expected ')' after expression.")
       return Expr.Grouping(expr)
     }
-    ???
+    throw error(peek, "Expected expression")
   }
 
   @tailrec
