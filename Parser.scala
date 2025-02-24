@@ -96,6 +96,18 @@ class Parser(tokens: Vector[Token]) {
     Lox.error(token, message)
     ParseError()
   }
+
+  private def synchronize(): Unit = {
+    advance()
+    while (!isAtEnd) {
+      if (previous.tokenType == SEMICOLON) { return }
+      peek.tokenType match {
+        case CLASS | FUN | VAR | FOR | IF | WHILE | PRINT | RETURN => return
+        case _ => ()
+      }
+    }
+    advance()
+  }
 }
 
 object Parser {
