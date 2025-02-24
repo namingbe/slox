@@ -1,3 +1,4 @@
+import Parser.ParseError
 import TokenType.*
 
 import scala.annotation.tailrec
@@ -84,5 +85,19 @@ class Parser(tokens: Vector[Token]) {
   private def isAtEnd = peek.tokenType == EOF
   private def peek = tokens(current)
   private def previous = tokens(current - 1)
-  private def consume(tokenType: TokenType, str: String) = ???
+  private def consume(tokenType: TokenType, message: String) = {
+    if (check(tokenType)) {
+      advance()
+    } else {
+      throw error(peek, message)
+    }
+  }
+  private def error(token: Token, message: String) = {
+    Lox.error(token, message)
+    ParseError()
+  }
+}
+
+object Parser {
+  private class ParseError extends RuntimeException
 }
