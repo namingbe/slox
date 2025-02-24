@@ -12,43 +12,20 @@ class Parser(tokens: Vector[Token]) {
 
   private var current = 0
 
+  private def sequence(nextExpr: () => Expr, types: TokenType*): Expr = {
+    var expr = nextExpr()
+    while (matches(types*)) {
+      val operator = previous
+      val right = nextExpr()
+      expr = Expr.Binary(expr, operator, right)
+    }
+    expr
+  }
   private def expression() =  equality()
-  private def equality() = {
-    var expr = comparison()
-    while (matches(BANG_EQUAL, EQUAL_EQUAL)) {
-      val operator = previous
-      val right = comparison()
-      expr = Expr.Binary(expr, operator, right)
-    }
-    expr
-  }
-  private def comparison() = {
-    var expr = term()
-    while (matches(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-      val operator = previous
-      val right = term()
-      expr = Expr.Binary(expr, operator, right)
-    }
-    expr
-  }
-  private def term() = {
-    var expr = factor()
-    while (matches(MINUS, PLUS)) {
-      val operator = previous
-      val right = factor()
-      expr = Expr.Binary(expr, operator, right)
-    }
-    expr
-  }
-  private def factor() = {
-    var expr: Expr = unary()
-    while (matches(SLASH, STAR)) {
-      val operator = previous
-      val right = unary()
-      expr = Expr.Binary(expr, operator, right)
-    }
-    expr
-  }
+  private def equality() = sequence(comparison, BANG_EQUAL, EQUAL_EQUAL)
+  private def comparison() = sequence(term, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)
+  private def term() = sequence(factor, MINUS, PLUS)
+  private def factor() = sequence(unary, SLASH, STAR)
   private def unary(): Expr = {
     if (matches(BANG, MINUS)) {
       val operator = previous
