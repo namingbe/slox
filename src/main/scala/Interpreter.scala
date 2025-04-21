@@ -3,6 +3,23 @@ import TokenType.*
 import java.lang
 
 class Interpreter extends Expr.Visitor[Any] {
+  def interpret(expr: Expr): Unit = {
+    try {
+      val value = evaluate(expr)
+      println(stringify(value))
+    } catch {
+      case e: RuntimeError => Lox.runtimeError(e)
+    }
+  }
+
+  def stringify(obj: Any): String = obj match {
+    case null => "nil"
+    case x: Double =>
+      val text = x.toString
+      if text.endsWith(".0") then text.dropRight(2) else text
+    case _ => obj.toString
+  }
+
   def evaluate(expr: Expr): Any = expr.accept(this)
 
   override def visitLiteralExpr(expr: Expr.Literal): Any = expr.value

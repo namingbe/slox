@@ -21,6 +21,8 @@ object Lox {
     run(String(bytes, Charset.defaultCharset()))
     if (hadError)
       System.exit(65)
+    if (hadRuntimeError)
+      System.exit(70)
   }
 
   @tailrec
@@ -43,12 +45,16 @@ object Lox {
     val parser = Parser(tokens)
     val maybeExpression = parser.parse()
     maybeExpression match {
-      case Some(expression) => println(AstPrinter().print(expression))
+      case Some(expression) => 
+//        println(AstPrinter().print(expression))
+        interpreter.interpret(expression)
       case None => ()
     }
   }
 
   private var hadError = false
+  private var hadRuntimeError = false
+  private val interpreter: Interpreter = Interpreter()
 
   def error(line: Int, message: String, where: String = ""): Unit = {
     println(s"[line $line] Error$where: $message")
@@ -57,5 +63,10 @@ object Lox {
   def error(token: Token, message: String): Unit = {
     val position = if token.tokenType == TokenType.EOF then " at end" else s" at '${token.lexeme}'"
     error(token.line, message, position)
+  }
+
+  def runtimeError(error: RuntimeError): Unit = {
+    println(s"${error.getMessage}\n[line${error.token.line}]")
+    hadRuntimeError = true
   }
 }
