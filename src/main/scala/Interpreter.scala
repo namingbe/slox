@@ -1,8 +1,6 @@
 import TokenType.*
 
-import java.lang
-
-class Interpreter extends Expr.Visitor[Any] {
+class Interpreter extends Expr.Visitor[Boolean | Double | String] {
   def interpret(expr: Expr): Unit = {
     try {
       val value = evaluate(expr)
@@ -12,7 +10,7 @@ class Interpreter extends Expr.Visitor[Any] {
     }
   }
 
-  def stringify(obj: Any): String = obj match {
+  def stringify(obj: Boolean | Double | String): String = obj match {
     case null => "nil"
     case x: Double =>
       val text = x.toString
@@ -20,77 +18,75 @@ class Interpreter extends Expr.Visitor[Any] {
     case _ => obj.toString
   }
 
-  def evaluate(expr: Expr): Any = expr.accept(this)
+  def evaluate(expr: Expr): Boolean | Double | String = expr.accept(this)
 
-  override def visitLiteralExpr(expr: Expr.Literal): Any = expr.value
+  override def visitLiteralExpr(expr: Expr.Literal): Boolean | Double | String = expr.value
 
-  override def visitGroupingExpr(expr: Expr.Grouping): Any =
+  override def visitGroupingExpr(expr: Expr.Grouping): Boolean | Double | String =
     evaluate(expr.expression)
 
-  extension (x: Any) def toDouble: lang.Double = lang.Double.valueOf(x.toString)
-
-  override def visitUnaryExpr(expr: Expr.Unary): Any = {
+  override def visitUnaryExpr(expr: Expr.Unary): Boolean | Double | String = {
     val right = evaluate(expr.right)
     expr.operator.tokenType match {
-      case BANG => lang.Boolean.valueOf(!isTruthy(right))
+      case BANG => !isTruthy(right)
       case MINUS =>
         checkNumberOperand(expr.operator, right)
-        -right.toDouble
+        -right.toString.toDouble
     }
   }
 
-  private def isTruthy(obj: Any): Boolean = obj match {
+  private def isTruthy(obj: Boolean | Double | String): Boolean = obj match {
     case null => false
     case o: Boolean => o
     case _ => true
   }
 
-  private def checkNumberOperand(operator: Token, operand: Any): Unit = operand match {
-    case _ : Double => ()
-    case _ => throw new RuntimeError(operator, "Operand must be a number.")
+  private def checkNumberOperand(operator: Token, operand: Boolean | Double | String): Unit = operand match {
+    case _: Double => ()
+    case _ => throw new RuntimeError(operator, s"Operand must be a number. ${operand.getClass.getCanonicalName}")
   }
 
-  private def checkNumberOperands(operator: Token, left: Any, right: Any): Unit = (left, right) match {
+  private def checkNumberOperands(operator: Token, left: Boolean | Double | String, right: Boolean | Double | String): Unit = (left, right) match {
     case (_: Double, _: Double) => ()
     case _ => throw new RuntimeError(operator, "Operand must be a number.")
   }
 
-  override def visitBinaryExpr(expr: Expr.Binary): Any = {
+  override def visitBinaryExpr(expr: Expr.Binary): Boolean | Double | String = {
     val left = evaluate(expr.left)
     val right = evaluate(expr.right)
 
     expr.operator.tokenType match
       case MINUS =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble - right.toDouble
+        left.toString.toDouble - right.toString.toDouble
       case SLASH =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble / right.toDouble
+        left.toString.toDouble / right.toString.toDouble
       case STAR =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble * right.toDouble
+        left.toString.toDouble * right.toString.toDouble
       case PLUS => (left, right) match {
         case (l: Double, r: Double) => l + r
         case (l: String, r: String) => l + r
-        case _ => RuntimeError(expr.operator, "Operands must be two numbers or two strings")
+        case _ => throw RuntimeError(expr.operator, "Operands must be two numbers or two strings")
       }
       case GREATER =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble > right.toDouble
+        left.toString.toDouble > right.toString.toDouble
       case GREATER_EQUAL =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble >= right.toDouble
+        left.toString.toDouble >= right.toString.toDouble
       case LESS =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble < right.toDouble
+        left.toString.toDouble < right.toString.toDouble
       case LESS_EQUAL =>
         checkNumberOperands(expr.operator, left, right)
-        left.toDouble <= right.toDouble
+        left.toString.toDouble <= right.toString.toDouble
       case BANG_EQUAL => !isEqual(left, right)
       case EQUAL_EQUAL => isEqual(left, right)
   }
 
-  private def isEqual(a: Any, b: Any): Boolean = {
+  private def isEqual(a: Boolean | Double | String, b: Boolean | Double | String): Boolean = {
     if (a == null && b == null) {
       true
     } else if (a == null) {

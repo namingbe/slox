@@ -9,7 +9,7 @@ object Expr {
   final case class Grouping(expression: Expr) extends Expr {
     override def accept[R](visitor: Visitor[R]): R = visitor.visitGroupingExpr(this)
   }
-  final case class Literal(value: Object) extends Expr {
+  final case class Literal(value: Boolean | Double | String) extends Expr {
     override def accept[R](visitor: Visitor[R]): R = visitor.visitLiteralExpr(this)
   }
   final case class Unary(operator: Token, right: Expr) extends Expr {

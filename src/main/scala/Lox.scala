@@ -45,8 +45,8 @@ object Lox {
     val parser = Parser(tokens)
     val maybeExpression = parser.parse()
     maybeExpression match {
-      case Some(expression) => 
-//        println(AstPrinter().print(expression))
+      case Some(expression) =>
+        println(AstPrinter().print(expression))
         interpreter.interpret(expression)
       case None => ()
     }

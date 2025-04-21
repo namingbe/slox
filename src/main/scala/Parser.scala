@@ -36,8 +36,8 @@ class Parser(tokens: Vector[Token]) {
     }
   }
   private def primary(): Expr = {
-    if (matches(FALSE)) { return Expr.Literal(java.lang.Boolean(false)) }
-    if (matches(TRUE)) { return Expr.Literal(java.lang.Boolean(true)) }
+    if (matches(FALSE)) { return Expr.Literal(false) }
+    if (matches(TRUE)) { return Expr.Literal(true) }
     if (matches(NIL)) { return Expr.Literal(null) }
     if (matches(NUMBER, STRING)) { return Expr.Literal(previous.literal) }
     if (matches(LEFT_PAREN)) {

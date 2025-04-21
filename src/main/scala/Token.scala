@@ -3,8 +3,8 @@ final case class Token(
   // to make a proper ADT later
   tokenType: TokenType,
   lexeme: String,
-  literal: Option[Any],
+  literal: Boolean | Double | String | Null,
   line: Int,
 ) {
-  override def toString: String = s"$tokenType $lexeme${if literal.isDefined then s" $literal" else ""}"
+  override def toString: String = s"$tokenType $lexeme${if literal == null then "" else s" $literal"}"
 }

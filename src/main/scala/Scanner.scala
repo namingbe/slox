@@ -17,7 +17,7 @@ final class Scanner(private val source: String) {
       start = end
       scanToken()
     }
-    tokens.addOne(Token(TokenType.EOF, "", None, line))
+    tokens.addOne(Token(TokenType.EOF, "", null, line))
     tokens.toVector
   }
 
@@ -56,7 +56,7 @@ final class Scanner(private val source: String) {
     c
   }
 
-  private def addToken(tokenType: TokenType, literal: Option[Any] = None): tokens.type = {
+  private def addToken(tokenType: TokenType, literal: Boolean | Double | String = null): tokens.type = {
     val text = lexeme
     tokens.addOne(Token(tokenType, text, literal, line))
   }
@@ -78,7 +78,7 @@ final class Scanner(private val source: String) {
       Lox.error(line, "Unterminated string.")
     }
     advance() // consume the closing quote
-    addToken(STRING, Some(source.substring(start + 1, end - 1)))
+    addToken(STRING, source.substring(start + 1, end - 1))
   }
 
   private def number(): Unit = {
@@ -87,7 +87,7 @@ final class Scanner(private val source: String) {
       advance()
       while (isDigit(peek)) advance()
     }
-    addToken(NUMBER, Some(lexeme.toDouble))
+    addToken(NUMBER, lexeme.toDouble)
   }
 
   private def identifier(): Unit = {
