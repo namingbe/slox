@@ -16,7 +16,9 @@ class Interpreter extends Expr.Visitor[Any] {
     val right = evaluate(expr.right)
     expr.operator.tokenType match {
       case BANG => lang.Boolean.valueOf(!isTruthy(right))
-      case MINUS => -right.toDouble
+      case MINUS =>
+        checkNumberOperand(expr.operator, right)
+        -right.toDouble
     }
   }
 
@@ -26,22 +28,47 @@ class Interpreter extends Expr.Visitor[Any] {
     case _ => true
   }
 
+  private def checkNumberOperand(operator: Token, operand: Any): Unit = operand match {
+    case _ : Double => ()
+    case _ => throw new RuntimeError(operator, "Operand must be a number.")
+  }
+
+  private def checkNumberOperands(operator: Token, left: Any, right: Any): Unit = (left, right) match {
+    case (_: Double, _: Double) => ()
+    case _ => throw new RuntimeError(operator, "Operand must be a number.")
+  }
+
   override def visitBinaryExpr(expr: Expr.Binary): Any = {
     val left = evaluate(expr.left)
     val right = evaluate(expr.right)
 
     expr.operator.tokenType match
-      case MINUS => left.toDouble - right.toDouble
-      case SLASH => left.toDouble / right.toDouble
-      case STAR => left.toDouble * right.toDouble
+      case MINUS =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble - right.toDouble
+      case SLASH =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble / right.toDouble
+      case STAR =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble * right.toDouble
       case PLUS => (left, right) match {
         case (l: Double, r: Double) => l + r
         case (l: String, r: String) => l + r
+        case _ => RuntimeError(expr.operator, "Operands must be two numbers or two strings")
       }
-      case GREATER => left.toDouble > right.toDouble
-      case GREATER_EQUAL => left.toDouble >= right.toDouble
-      case LESS => left.toDouble < right.toDouble
-      case LESS_EQUAL => left.toDouble <= right.toDouble
+      case GREATER =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble > right.toDouble
+      case GREATER_EQUAL =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble >= right.toDouble
+      case LESS =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble < right.toDouble
+      case LESS_EQUAL =>
+        checkNumberOperands(expr.operator, left, right)
+        left.toDouble <= right.toDouble
       case BANG_EQUAL => !isEqual(left, right)
       case EQUAL_EQUAL => isEqual(left, right)
   }
